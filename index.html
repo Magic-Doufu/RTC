@@ -18,12 +18,14 @@
 		  height: auto;
 		}
     </style>
+	<input type="text" id="O_serial" name="O_serial" class="form-control">
 	<video id="scanner-container" autoplay="autoplay"></video>
 	<div class="d-flex">
 		<button class="btn btn-primary flex-fill mr-2" id="cam_on">啟動相機</button>
 		<button class="btn btn-primary flex-fill mx-2" id="torch_on">開燈</button>
 		<button class="btn btn-primary flex-fill mx-2" id="torch_off">關燈</button>
 		<button class="btn btn-primary flex-fill ml-2" id="cam_off">關閉相機</button>
+		<button class="btn btn-outline-secondary" type="button" onclick="snap('O_serial')">scan</button>
 	</div>
 </body>
 <script type="text/javascript">
