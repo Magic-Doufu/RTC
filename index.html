@@ -37,7 +37,7 @@
 	$('#barcode_in').on('keyup',function() {
 		$("#barcode").JsBarcode(this.value, {
 		  width:1,
-		  height:20,
+		  height:23,
 		  fontSize: 14
 		});
 	})
@@ -106,7 +106,7 @@ window.cambarcode = class cambarcode {
 		cap.grabFrame().then(frame => {
 	    	const bcd = new BarcodeDetector();
 	    	bcd.detect(frame)
-	    	    .then(barcodes => {if(barcodes.length) {callback(barcodes[0].rawValue)}})
+	    	    .then(barcodes => {barcodes.forEach(barcode => alert(barcodes.rawValue))})
 	    	    .catch((e) => {
 	    	        alert("Barcode detection fail!" + e);
 	    	    })
