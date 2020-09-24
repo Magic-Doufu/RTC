@@ -106,7 +106,7 @@ window.cambarcode = class cambarcode {
 		cap.grabFrame().then(frame => {
 	    	const bcd = new BarcodeDetector();
 	    	bcd.detect(frame)
-	    	    .then(barcodes => {barcodes.forEach(barcode => alert(barcodes.rawValue))})
+	    	    .then(barcodes => {alert(barcodes.length)})
 	    	    .catch((e) => {
 	    	        alert("Barcode detection fail!" + e);
 	    	    })
