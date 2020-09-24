@@ -3,6 +3,7 @@
 <head>
 	<title>aoidji</title>
 	<script src="https://code.jquery.com/jquery-3.5.1.min.js" integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0=" crossorigin="anonymous"></script>
+	<script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.0/dist/barcodes/JsBarcode.code128.min.js"></script>
 	<meta charset="utf-8">
 </head>
 <body>
@@ -18,7 +19,11 @@
 		  height: auto;
 		}
     </style>
-	<input type="text" id="O_serial" name="O_serial" class="form-control">
+    <div>
+		<input type="text" id="barcode_in" value="E1230448">
+	</div>
+	<img id="barcode">
+	<div id="output"></div>
 	<video id="scanner-container" autoplay="autoplay"></video>
 	<div class="d-flex">
 		<button class="btn btn-primary flex-fill mr-2" id="cam_on">啟動相機</button>
@@ -29,28 +34,58 @@
 	</div>
 </body>
 <script type="text/javascript">
+	$('#barcode_in').on('keyup',function() {
+		$("#barcode").JsBarcode(this.value, {
+		  width:1,
+		  height:20,
+		  fontSize: 14
+		});
+	})
+	window.addEventListener("orientationchange", function(){
+    alert(window.orientation);
+}, false);
+
 window.cambarcode = class cambarcode {
   	constructor(tg) {
   	  this.target = document.getElementById(tg);
   	}
 
-	init(){ //載入攝影機，後鏡頭。
-		const constraints = {
-  		video: {
-          facingMode: 'environment',
-  		  width: { min: 640, ideal: 640, max: 1920 },
-  		  height: { min: 480, ideal: 480, max: 1080 }
-  		},
-        audio: false
-    	};
-    	navigator.mediaDevices
-        	.getUserMedia(constraints)
-        	.then(stream => {
-        	    this.target.srcObject = stream;
-        	})
-        	.catch(error => {
-        	    console.error(error);
-        	})
+	init(callback){ //載入攝影機，後鏡頭。
+		//篩選確定有攝影機
+		navigator.mediaDevices.enumerateDevices().then(devices => {
+			const cameras = devices.filter((device) => device.kind === 'videoinput');
+    		if (cameras.length === 0) {
+    			callback();
+    			alert('No camera found on this device.');
+    		  	throw 'No camera found on this device.';
+    		}
+    		// 確定有攝影機
+			const w = { min: 1024, ideal: 1280, max: 1920 };
+			const h = { min: 576, ideal: 720, max: 1080 };
+			const constraints = {
+  			video: {
+        	  facingMode: 'environment',
+  			  width: 640,
+  			  height: 480,
+  			  aspectRatio: 1.7777777778
+  			},
+        	audio: false
+    		};
+    		//偵測螢幕是寬還是高
+			if(window.orientation == 0 && window.screen.height > window.screen.width) {
+				constraints.video.height = w;
+				constraints.video.width = h;
+			}
+			//開啟攝影機的串流
+    		navigator.mediaDevices
+        		.getUserMedia(constraints)
+        		.then(stream => {
+        		    this.target.srcObject = stream;
+        		})
+        		.catch(error => {
+        		    console.error(error);
+        		})
+        });
 	}
 
 	torch(state) {
@@ -88,7 +123,7 @@ window.cambarcode = class cambarcode {
 	$('#torch_off').click(function(){cam.torch(false)})
 	function snap(id) {
 		//document.getElementById(id).value
-		cam.getbc(rawval => {document.getElementById(id).value = rawval;});
+		cam.getbc(rawval => {alert(rawval)});
 		return false;
 	}
 </script>
