@@ -48,6 +48,9 @@
 window.cambarcode = class cambarcode {
   	constructor(tg) {
   	  this.target = document.getElementById(tg);
+  	  this.osd = document.createElement('canvas');
+  	  this.osd.style.cssText = 'position: absolute;left: 0;top: 0;height: 100%;width: 100%;';
+  	  this.osd.id = tg + '-osd'
   	}
 
 	init(callback){ //載入攝影機，後鏡頭。
@@ -59,14 +62,15 @@ window.cambarcode = class cambarcode {
     			alert('No camera found on this device.');
     		  	throw 'No camera found on this device.';
     		}
+    		// 選擇攝影機未做
     		// 確定有攝影機
 			const w = { min: 1024, ideal: 1280, max: 1920 };
-			const h = { min: 576, ideal: 720, max: 1080 };
+			const h = { min: 240, ideal: 400, max: 1080 };
 			const constraints = {
   			video: {
         	  facingMode: 'environment',
-  			  width: 640,
-  			  height: 480,
+  			  width: w,
+  			  height: h,
   			  aspectRatio: 1.7777777778
   			},
         	audio: false
@@ -81,6 +85,14 @@ window.cambarcode = class cambarcode {
         		.getUserMedia(constraints)
         		.then(stream => {
         		    this.target.srcObject = stream;
+        		    this.target.style.display = 'block';
+					this.target.parentElement.style.position = 'relative';
+					var cv = this.osd;
+					this.target.parentElement.append(cv);
+					var ctx = cv.getContext("2d");
+					ctx.rect(0, (cv.height / 2) - 1, cv.width, 2);
+					ctx.strokeStyle="red";
+					ctx.stroke();
         		})
         		.catch(error => {
         		    console.error(error);
@@ -94,6 +106,9 @@ window.cambarcode = class cambarcode {
 	}
 
 	stop() {
+		var cv = this.osd;
+		const context = cv.getContext('2d');
+		context.clearRect(0, 0, cv.width, cv.height);
 	    this.target.srcObject.getTracks().forEach(function(track) {
 	        if (track.readyState == 'live') {
 	            track.stop();
@@ -104,15 +119,19 @@ window.cambarcode = class cambarcode {
 	getbc(callback) {
 		const cap = new ImageCapture(this.target.srcObject.getVideoTracks()[0]);
 		cap.grabFrame().then(frame => {
+			var cv = document.createElement("canvas");
+			var ctx = cv.getContext("2d");
+			cv.width = frame.width * 0.6
+			cv.height = 40
+			ctx.drawImage(frame, frame.width * 0.2, (frame.height / 2) - 20, cv.width, 40, 0, 0, cv.width, 40);
 	    	const bcd = new BarcodeDetector();
-	    	bcd.detect(frame)
-	    	    .then(barcodes => {if(barcodes.length) {callback(barcodes.length)}})
+	    	bcd.detect(cv)
+	    	    .then(barcodes => {if(barcodes.length) {callback(barcodes[0].rawValue)}})
 	    	    .catch((e) => {
 	    	        alert("Barcode detection fail!" + e);
 	    	    })
 		})
 	}
-
 }
 </script>
 <script type="text/javascript">
